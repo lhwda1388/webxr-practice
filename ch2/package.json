@@ -7,5 +7,8 @@
   },
   "dependencies": {
     "parcel": "^2.2.1"
+  },
+  "devDependencies": {
+    "@parcel/transformer-glsl": "^2.2.1"
   }
 }

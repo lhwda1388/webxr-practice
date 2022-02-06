@@ -54,6 +54,7 @@ window.onload = () => {
     program,
     "vertex_points"
   );
+  gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
 
   // 세이더 속성을 버퍼 객체에 있는 포인트 데이터에 연결
   gl.vertexAttribPointer(pointsAttributeLocation, 2, gl.FLOAT, false, 0, 0);

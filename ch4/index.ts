@@ -162,14 +162,32 @@ const main = () => {
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorAttribLocation);
+
+    // 오브젝트 변환
     const modelMatrixLocation = gl.getUniformLocation(
       program,
       'uModelViewMatrix',
     );
-    const modelViewMatrix = mat4.create();
 
-    mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, 0.5]);
-    mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [1, 0, 0]);
+    // 원근감
+    const projectionMatrixLocation = gl.getUniformLocation(
+      program,
+      'uProjectionMatrix',
+    );
+    const projectionMatrix = mat4.create();
+
+    const filedOfView = 45 * (Math.PI / 180); // 라디안
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 100.0;
+
+    mat4.perspective(projectionMatrix, filedOfView, aspect, zNear, zFar);
+
+    const modelViewMatrix = mat4.create();
+    mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -2.0]);
+    mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 1, 0]);
+
+    gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
     gl.uniformMatrix4fv(modelMatrixLocation, false, modelViewMatrix);
 
     // 그리기

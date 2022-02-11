@@ -1,6 +1,6 @@
 import vertexSource from './shaders/vertex.glsl';
 import fragmentSource from './shaders/fragment.glsl';
-import glMatrix from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 const main = () => {
   // WebGL 콘텍스트 생성
@@ -138,34 +138,54 @@ const main = () => {
   gl.attachShader(program, fragmentShader);
   // 링크 세이더 프로그램
   gl.linkProgram(program);
-  gl.useProgram(program);
-  // 속성을 정점 세이더와 연결
-  const posAttribLocation = gl.getAttribLocation(program, 'aPosition');
-  gl.bindBuffer(gl.ARRAY_BUFFER, squaresBuffer);
-  const positionGroupCount = 3;
-  gl.vertexAttribPointer(
-    posAttribLocation,
-    positionGroupCount,
-    gl.FLOAT,
-    false,
-    0,
-    0,
-  );
-  gl.enableVertexAttribArray(posAttribLocation);
-  const colorAttribLocation = gl.getAttribLocation(program, 'aVertexColor');
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(colorAttribLocation);
-  // 그리기
-  gl.clearColor(0, 0, 0, 0);
-  gl.enable(gl.DEPTH_TEST);
-  gl.depthFunc(gl.LEQUAL);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  // 화면에 포인트 그리기
-  const mode = gl.TRIANGLES;
-  const first = 0;
-  const count = squares.length / positionGroupCount;
-  gl.drawArrays(mode, first, count);
+  let cubeRotation = 0.0;
+  let then = 0;
+  const render = (now: number) => {
+    now *= 0.001;
+    const deltaTime = now - then;
+    then = now;
+    gl.useProgram(program);
+    // 속성을 정점 세이더와 연결
+    const posAttribLocation = gl.getAttribLocation(program, 'aPosition');
+    gl.bindBuffer(gl.ARRAY_BUFFER, squaresBuffer);
+    const positionGroupCount = 3;
+    gl.vertexAttribPointer(
+      posAttribLocation,
+      positionGroupCount,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    );
+    gl.enableVertexAttribArray(posAttribLocation);
+    const colorAttribLocation = gl.getAttribLocation(program, 'aVertexColor');
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(colorAttribLocation);
+    const modelMatrixLocation = gl.getUniformLocation(
+      program,
+      'uModelViewMatrix',
+    );
+    const modelViewMatrix = mat4.create();
+
+    mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, 0.5]);
+    mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [1, 0, 0]);
+    gl.uniformMatrix4fv(modelMatrixLocation, false, modelViewMatrix);
+
+    // 그리기
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // 화면에 포인트 그리기
+    const mode = gl.TRIANGLES;
+    const first = 0;
+    const count = squares.length / positionGroupCount;
+    gl.drawArrays(mode, first, count);
+    cubeRotation += deltaTime;
+    requestAnimationFrame(render);
+  };
+  requestAnimationFrame(render);
 };
 
 main();

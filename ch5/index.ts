@@ -30,9 +30,29 @@ const main = () => {
   const cubeSize = 4;
   const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
   //// 구 만들기
+  const sphereRaduis = 3;
+  const sphereWidthSegments = 32;
+  const sphereHeightSegments = 16;
+  const sphereGeometry = new THREE.SphereGeometry(
+    sphereRaduis,
+    sphereWidthSegments,
+    sphereHeightSegments,
+  );
+  const planeWidth = 256;
+  const planeHeight = 128;
+  const planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
   // 재질 및 질감
+  const textureLoader = new THREE.TextureLoader();
   const cubeMaterial = new THREE.MeshPhongMaterial({
     color: 'pink',
+  });
+  const sphereMaterial = new THREE.MeshPhongMaterial({
+    color: 'tan',
+  });
+
+  const planeTextureMap = textureLoader.load('textures/pebbles.jpg');
+  const planeMaterial = new THREE.MeshLambertMaterial({
+    map: planeTextureMap,
   });
   // 조명
   const color = 0xffffff;
@@ -42,7 +62,12 @@ const main = () => {
   // 메시(MESH)
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   cube.position.set(cubeSize + 1, cubeSize + 1, 0);
+  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphere.position.set(-sphereRaduis - 1, sphereRaduis + 2, 0);
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
   scene.add(cube);
+  scene.add(sphere);
+  sphere.add(plane);
   // 그리기
   const draw = () => {
     if (resizeGLToDisplaySize(gl)) {
@@ -53,6 +78,10 @@ const main = () => {
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
     cube.rotation.z += 0.01;
+
+    sphere.rotation.x += 0.01;
+    sphere.rotation.y += 0.01;
+    sphere.rotation.z += 0.01;
 
     gl.render(scene, camera);
     requestAnimationFrame(draw);

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import pebbles from './textures/pebbles.jpg';
 
 const main = () => {
   // 콘텍스트 생성
@@ -26,6 +27,9 @@ const main = () => {
   // 포그 추가
   // 지오메트리
   //// 수직 평면 만들기
+  const planeWidth = 256;
+  const planeHeight = 128;
+  const planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
   //// 상자 생성
   const cubeSize = 4;
   const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
@@ -38,9 +42,7 @@ const main = () => {
     sphereWidthSegments,
     sphereHeightSegments,
   );
-  const planeWidth = 256;
-  const planeHeight = 128;
-  const planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+
   // 재질 및 질감
   const textureLoader = new THREE.TextureLoader();
   const cubeMaterial = new THREE.MeshPhongMaterial({
@@ -50,24 +52,35 @@ const main = () => {
     color: 'tan',
   });
 
-  const planeTextureMap = textureLoader.load('textures/pebbles.jpg');
+  const planeTextureMap = textureLoader.load(
+    // resource URL
+    pebbles,
+  );
+
   const planeMaterial = new THREE.MeshLambertMaterial({
     map: planeTextureMap,
   });
+
+  // 메시(MESH)
+  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  cube.position.set(cubeSize + 1, cubeSize + 1, 0);
+  scene.add(cube);
+
+  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphere.position.set(-sphereRaduis - 1, sphereRaduis + 2, 0);
+  scene.add(sphere);
+
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  // sphere.add(plane);
+
   // 조명
   const color = 0xffffff;
   const intensity = 1;
   const light = new THREE.DirectionalLight(color, intensity);
+  light.position.set(0, 30, 30);
+  light.target = plane;
   scene.add(light);
-  // 메시(MESH)
-  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  cube.position.set(cubeSize + 1, cubeSize + 1, 0);
-  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  sphere.position.set(-sphereRaduis - 1, sphereRaduis + 2, 0);
-  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  scene.add(cube);
-  scene.add(sphere);
-  sphere.add(plane);
+  scene.add(light.target);
   // 그리기
   const draw = () => {
     if (resizeGLToDisplaySize(gl)) {

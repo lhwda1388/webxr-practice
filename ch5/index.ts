@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import pebbles from './textures/pebbles.jpg';
+import sphereNormal from './textures/sphere_normal.png';
+import pebbleGray from './textures/pebbies_gray.png';
+import pebbleNormal from './textures/pebbles_normal.png';
 
 const main = () => {
   // 콘텍스트 생성
@@ -24,7 +27,10 @@ const main = () => {
   camera.position.set(0, 8, 30);
   // 장면 생성
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0.3, 0.5, 0.8);
   // 포그 추가
+  const fog = new THREE.Fog('gray', 1, 100);
+  scene.fog = fog;
   // 지오메트리
   //// 수직 평면 만들기
   const planeWidth = 256;
@@ -45,20 +51,46 @@ const main = () => {
 
   // 재질 및 질감
   const textureLoader = new THREE.TextureLoader();
+
+  const cubeTextureMap = textureLoader.load(pebbleGray);
+
   const cubeMaterial = new THREE.MeshPhongMaterial({
     color: 'pink',
-  });
-  const sphereMaterial = new THREE.MeshPhongMaterial({
-    color: 'tan',
+    map: cubeTextureMap,
   });
 
   const planeTextureMap = textureLoader.load(
     // resource URL
     pebbles,
   );
+  planeTextureMap.wrapS = THREE.RepeatWrapping;
+  planeTextureMap.wrapT = THREE.RepeatWrapping;
+  planeTextureMap.repeat.set(16, 16);
+  planeTextureMap.minFilter = THREE.NearestFilter;
+  // planeTextureMap.anisotropy = gl.getMaxAnisotropy();
 
-  const planeMaterial = new THREE.MeshLambertMaterial({
+  const planeNormalMap = textureLoader.load(
+    // resource URL
+    pebbleNormal,
+  );
+  planeNormalMap.wrapS = THREE.RepeatWrapping;
+  planeNormalMap.wrapT = THREE.RepeatWrapping;
+  planeNormalMap.minFilter = THREE.NearestFilter;
+  planeNormalMap.repeat.set(16, 16);
+
+  const planeMaterial = new THREE.MeshStandardMaterial({
     map: planeTextureMap,
+    side: THREE.DoubleSide,
+    normalMap: planeNormalMap,
+  });
+
+  const sphereNormalMap = textureLoader.load(sphereNormal);
+  sphereNormalMap.wrapS = THREE.RepeatWrapping;
+  sphereNormalMap.wrapT = THREE.RepeatWrapping;
+
+  const sphereMaterial = new THREE.MeshStandardMaterial({
+    color: 'tan',
+    normalMap: sphereNormalMap,
   });
 
   // 메시(MESH)
@@ -71,7 +103,8 @@ const main = () => {
   scene.add(sphere);
 
   const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  // sphere.add(plane);
+  plane.rotation.x = Math.PI / 2;
+  scene.add(plane);
 
   // 조명
   const color = 0xffffff;
@@ -81,8 +114,14 @@ const main = () => {
   light.target = plane;
   scene.add(light);
   scene.add(light.target);
+  // 주변 조명
+  const ambientColor = 0xffffff;
+  const ambientIntensity = 0.2;
+  const ambientLight = new THREE.AmbientLight(ambientColor, ambientIntensity);
+  scene.add(ambientLight);
   // 그리기
-  const draw = () => {
+  const draw = (time) => {
+    time *= 0.001;
     if (resizeGLToDisplaySize(gl)) {
       const canvas = gl.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -95,6 +134,8 @@ const main = () => {
     sphere.rotation.x += 0.01;
     sphere.rotation.y += 0.01;
     sphere.rotation.z += 0.01;
+    light.position.x = 20 * Math.cos(time);
+    light.position.y = 20 * Math.sin(time);
 
     gl.render(scene, camera);
     requestAnimationFrame(draw);
